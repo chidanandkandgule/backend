@@ -119,22 +119,22 @@
       );
 
       const invoiceData = invoiceResponse.data;
-      const accountId = invoiceData.accountId;
+      // const accountId = invoiceData.accountId;
 
-      if (!accountId) {
-        return res.status(404).json({ error: 'Account ID not found in invoice data' });
-      }
+      // if (!accountId) {
+      //   return res.status(404).json({ error: 'Account ID not found in invoice data' });
+      // }
 
-      // Step 3: Get account by accountId
-      const accountResponse = await axios.get(
-        `https://rest.test.zuora.com/v1/accounts/${accountId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            Accept: 'application/json'
-          }
-        }
-      );
+      // // Step 3: Get account by accountId
+      // const accountResponse = await axios.get(
+      //   `https://rest.test.zuora.com/v1/accounts/${accountId}`,
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${accessToken}`,
+      //       Accept: 'application/json'
+      //     }
+      //   }
+      // );
 
       if (!invoiceData.id) {
         return res.status(404).json({ error: 'Invoice ID not found in invoice data' });
@@ -221,7 +221,7 @@
         queryData: queryData.data,
         accessToken:accessToken,
         invoice: invoiceData,
-        account: accountResponse.data
+       // account: accountResponse.data
       });
 
     } catch (err) {
@@ -266,7 +266,9 @@
   // Create Payment Session API
     async function createPaymentSession(currency,accountId,amount,invoiceId,tken) {
       console.log('currency' ,currency,'createPaymentSession called with accountId:',  accountId, 'amount:', amount, 'invoiceId',invoiceId, 'tken:', tken);
-      const response = await axios.post(
+     let paymentGateway = currency == 'USD' ? "2c92a00e768e480a017690d7302d7d70" : "2c92a00f768e4fac017690d99cb73e9f"
+     console.log('paymentGateway',paymentGateway)
+     const response = await axios.post(
         `https://rest.test.zuora.com/web-payments/sessions`,
         {
           
@@ -274,14 +276,15 @@
           "accountId": accountId,
           "processPayment": true,
           "storePaymentMethod": true,
-          "paymentGateway": currency == 'USD' ? "2c92a00e768e480a017690d7302d7d70" : "2c92a00f768e4fac017690d99cb73e9f" ,
+          "paymentGateway": paymentGateway,
           "supports3DS2": true,
           "invoices": [
                         {
                           "invoiceNumber": invoiceId 
                         }
          ],
-          "amount": amount,                     
+          "amount": 1.00,   
+                            
         },
         {
           headers: {
