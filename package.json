@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "npx babel src --out-dir dist"
+    "build": "npx babel --out-dir dist"
   },
   "dependencies": {
     "@babel/preset-env": "^7.27.2",
