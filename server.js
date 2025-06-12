@@ -14,71 +14,6 @@ app.use(bodyParser.json());
 // sam
 let zuoraToken = null;
 
-// app.post('/create-payment-session', async (req, res) => {
-//   try {
-//     const { firstName, lastName, currency, amount } = req.body;
-
-//     const contact = { 
-//       firstName,
-//       lastName,
-//       country: "US",
-//       state: "CA"
-//     };
-
-//     const accountRequest = {
-//       name: `${firstName} ${lastName}`,
-//       billToContact: contact,
-//       billCycleDay: 1,
-//       soldToSameAsBillTo: true,
-//       autoPay: false,
-//       currency
-//     };
-
-//     const accountResp = await zuoraClient.accountsApi().createAccountApi(accountRequest).execute();
-
-//     const paymentSessionReq = {
-//       currency,
-//       amount: parseFloat(amount),
-//       processPayment: true,
-//       accountId: accountResp.getAccountId()
-//     };
-
-//     const sessionResp = await zuoraClient.paymentMethodsApi().createPaymentSessionApi(paymentSessionReq).execute();
-
-//     res.json(sessionResp.getToken());
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Payment session creation failed" });
-//   }
-// });
-
-
-// app.post('/zuora/token', async (req, res) => {
-//   try {
-//     const response = await axios.post(
-//       'https://rest.apisandbox.zuora.com/oauth/token',
-//       qs.stringify({
-//         client_id: process.env.CLIENT_ID,
-//         client_secret: process.env.CLIENT_SECRET,
-//         grant_type: 'client_credentials'
-//       }),
-//       {
-//         headers: {
-//           'Content-Type': 'application/x-www-form-urlencoded',
-//           'Accept': 'application/json'
-//         }
-//       }
-//     );
-//     res.json(response.data);
-//      zuoraToken = response.data.access_token;
-
-//   } catch (err) {
-//     console.error(err.response?.data || err.message);
-//     res.status(500).json({ error: 'Failed to get Zuora token' });
-//   }
-// });
-
-
 app.get('/zuora/invoice/:id', async (req, res) => {
   const invoiceId = req.params.id;
 
@@ -120,21 +55,6 @@ app.get('/zuora/invoice/:id', async (req, res) => {
 
     const invoiceData = invoiceResponse.data;
     // const accountId = invoiceData.accountId;
-
-    // if (!accountId) {
-    //   return res.status(404).json({ error: 'Account ID not found in invoice data' });
-    // }
-
-    // // Step 3: Get account by accountId
-    // const accountResponse = await axios.get(
-    //   `https://rest.test.zuora.com/v1/accounts/${accountId}`,
-    //   {
-    //     headers: {
-    //       Authorization: `Bearer ${accessToken}`,
-    //       Accept: 'application/json'
-    //     }
-    //   }
-    // );
 
     if (!invoiceData.id) {
       return res.status(404).json({ error: 'Invoice ID not found in invoice data' });
@@ -231,38 +151,6 @@ app.get('/zuora/invoice/:id', async (req, res) => {
 });
 
 
-
-// Create Account API
-// async function createZuoraAccount(data) {
-//   const accountPayload = {
-//     name: `${data.firstName} ${data.lastName}`,
-//     billToContact: {
-//       firstName: data.firstName,
-//       lastName: data.lastName,
-//       country: "US",
-//       state: "CA"
-//     },
-//     soldToSameAsBillTo: true,
-//     billCycleDay: 1,
-//     autoPay: false,
-//     currency: data.currency
-//   };
-
-//   const response = await axios.post(
-//     `${process.env.ZUORA_ENV}/v1/accounts`,
-//     accountPayload,
-//     {
-//       headers: {
-//         Authorization: `Bearer ${zuoraToken}`,
-//         Accept: 'application/json',
-//         'Content-Type': 'application/json'
-//       }
-//     }
-//   );
-
-//   return response.data.accountId;
-// }
-
 // Create Payment Session API
 async function createPaymentSession(currency, accountId, amount, invoiceId, tken) {
   console.log('currency', currency, 'createPaymentSession called with accountId:', accountId, 'amount:', amount, 'invoiceId', invoiceId, 'tken:', tken);
@@ -321,9 +209,5 @@ app.post('/create-payment-session', async (req, res) => {
   }
 });
 
-
-//  app.get('*', (req, res) => {
-//   res.sendFile(path.join(__dirname, '../frontend/dist/frontend/index.html'));
-// });
 
 app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));
