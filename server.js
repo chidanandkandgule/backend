@@ -6,10 +6,10 @@
   const path = require('path') 
   const axios = require('axios') 
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
   app.use(cors()); // ✅ enable CORS for all origins
   app.use(bodyParser.json());
-  app.use(express.static(path.join(__dirname, '../frontend/src/frontend')));
+  app.use(express.static(path.join(__dirname, '../frontend/dist/frontend')));
 
   // sam
   let zuoraToken = null;
@@ -322,8 +322,8 @@
   });
 
 
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/src/index.html'));
-  });
+ app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist/frontend/index.html'));
+});
 
   app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));
