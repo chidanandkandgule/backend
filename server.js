@@ -283,7 +283,7 @@
                           "invoiceNumber": invoiceId 
                         }
          ],
-          "amount": 1.00,   
+          "amount": currency,   
                             
         },
         {
