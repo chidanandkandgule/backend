@@ -6,7 +6,7 @@
   const path = require('path') 
   const axios = require('axios') 
   const app = express();
-  const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT || 8080;
   app.use(cors()); // ✅ enable CORS for all origins
   app.use(bodyParser.json());
   app.use(express.static(path.join(__dirname, '../frontend/dist/frontend')));
