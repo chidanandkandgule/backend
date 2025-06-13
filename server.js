@@ -171,7 +171,7 @@ async function createPaymentSession(currency, accountId, amount, invoiceId, tken
           "invoiceNumber": invoiceId
         }
       ],
-      "amount": currency,
+      "amount": amount,
 
     },
     {
