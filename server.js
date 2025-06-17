@@ -87,7 +87,6 @@ app.get('/zuora/invoice/:id', async (req, res) => {
     console.log('queryDerailsID', queryDerails.id)
     //Step 3: Get account by accountId
 
-
     let status = null;
     let responseData = null;
     let fileDetails = null;
@@ -166,14 +165,17 @@ async function createPaymentSession(currency, accountId, amount, invoiceId, tken
       "storePaymentMethod": true,
       "paymentGateway": paymentGateway,
       "supports3DS2": true,
-      "invoices": [
-        {
-          "invoiceNumber": invoiceId
-        }
-      ],
+      // "invoices": [
+      //   {
+      //     "invoiceNumber": invoiceId
+      //   }
+      // ],
       "amount": amount,
 
     },
+
+              
+
     {
       headers: {
         Authorization: `Bearer ${tken}`,
@@ -208,6 +210,52 @@ app.post('/create-payment-session', async (req, res) => {
     res.status(500).json({ error: 'Failed to create payment session' });
   }
 });
+
+    // Create Payment Session Endpoint
+app.post('/apply-payment', async (req, res) => {
+  try {
+    const { paymentid,amount,invoiceId,accessToken } = req.body;
+    // const tken = accessToken;
+    // console.log('tken', tken)
+    // const accountId = inaccountId
+    // console.log('accountId', accountId)
+    const applyPaymentResponse = await applyPayment(paymentid, amount,invoiceId,accessToken);
+    console.log('applyPaymentResponse', applyPaymentResponse)
+    res.json(applyPaymentResponse);
+  } catch (error) {
+    console.error('Zuora API error:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Failed to apply Payment to invoice' });
+  }
+});
+
+
+async function applyPayment(paymentkey, amount,invoiceid, accessToken) {
+  console.log('paymentkey', paymentkey, 'invoiceid', invoiceid, 'amount:', amount, 'accessToken', accessToken);
+  console.log("paymentURL", `https://rest.test.zuora.com/v1/payments/${paymentkey}/apply`);
+  const response = await axios.put(
+    `https://rest.test.zuora.com/v1/payments/${paymentkey}/apply`,
+          {
+            "invoices": [
+              {
+                "invoiceId": invoiceid,
+                "amount": amount
+              }
+            ]
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              Accept: 'application/json',
+            }
+          }
+  );
+
+  console.log('applyPayment response:', response.data);
+  return response.data;
+
+}
+
+
 
 
 app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));
