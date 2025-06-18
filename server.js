@@ -135,9 +135,9 @@ app.get('/zuora/invoice/:id', async (req, res) => {
     // Combine invoice and account info 
     res.json({
       invoiceWithCCDetails: invoiceWithCCResponse.data,
-      subscriptionDetails: subscriptionData,
-      fileDetails: fileDetails.data,
-      queryData: queryData.data,
+      // subscriptionDetails: subscriptionData,
+      // fileDetails: fileDetails.data,
+      // queryData: queryData.data,
       accessToken: accessToken,
       invoice: invoiceData,
       // account: accountResponse.data
