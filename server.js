@@ -9,10 +9,7 @@ const app = express();
 const PORT = 8080;
 app.use(cors()); // ✅ enable CORS for all origins
 app.use(bodyParser.json());
-// app.use(express.static(path.join(__dirname, '../frontend/dist/frontend')));
 
-// sam
-let zuoraToken = null;
 
 app.get('/zuora/invoice/:id', async (req, res) => {
   const invoiceId = req.params.id;
@@ -36,7 +33,6 @@ app.get('/zuora/invoice/:id', async (req, res) => {
     );
 
     const accessToken = tokenResponse.data.access_token;
-    console.log('accessToken', tokenResponse)
     if (!accessToken) {
       return res.status(500).json({ error: 'Failed to get access token' });
     }
@@ -65,7 +61,9 @@ app.get('/zuora/invoice/:id', async (req, res) => {
       `https://rest.test.zuora.com/query/jobs`,
 
       {
-        "query": `SELECT DISTINCT sub.ID AS SubscriptionID FROM invoiceitem ii JOIN Invoice inv ON ii.InvoiceId = inv.ID JOIN Subscription sub ON ii.SubscriptionId = sub.ID WHERE inv.ID = '${invoiceData.id}'`,
+        "query": `SELECT DISTINCT sub.ID AS SubscriptionID FROM invoiceitem 
+        ii JOIN Invoice inv ON ii.InvoiceId = inv.ID JOIN Subscription sub ON 
+        ii.SubscriptionId = sub.ID WHERE inv.ID = '${invoiceData.id}'`,
         "compression": "NONE",
         "output": {
           "target": "S3"
@@ -84,7 +82,6 @@ app.get('/zuora/invoice/:id', async (req, res) => {
     if (!queryDerails.id) {
       return res.status(404).json({ error: 'No subscription data found for the invoice' });
     }
-    console.log('queryDerailsID', queryDerails.id)
     //Step 3: Get account by accountId
 
     let status = null;
@@ -135,12 +132,9 @@ app.get('/zuora/invoice/:id', async (req, res) => {
     // Combine invoice and account info 
     res.json({
       invoiceWithCCDetails: invoiceWithCCResponse.data,
-      // subscriptionDetails: subscriptionData,
-      // fileDetails: fileDetails.data,
-      // queryData: queryData.data,
       accessToken: accessToken,
-      invoice: invoiceData,
-      // account: accountResponse.data
+      invoice: invoiceData
+      
     });
 
   } catch (err) {
@@ -154,7 +148,6 @@ app.get('/zuora/invoice/:id', async (req, res) => {
 async function createPaymentSession(currency, accountId, amount, invoiceId, tken) {
   console.log('currency', currency, 'createPaymentSession called with accountId:', accountId, 'amount:', amount, 'invoiceId', invoiceId, 'tken:', tken);
   let paymentGateway = currency == 'USD' ? "2c92a00e768e480a017690d7302d7d70" : "2c92a00f768e4fac017690d99cb73e9f"
-  console.log('paymentGateway', paymentGateway)
   const response = await axios.post(
     `https://rest.test.zuora.com/web-payments/sessions`,
     {
@@ -165,17 +158,8 @@ async function createPaymentSession(currency, accountId, amount, invoiceId, tken
       "storePaymentMethod": true,
       "paymentGateway": paymentGateway,
       "supports3DS2": true,
-      // "invoices": [
-      //   {
-      //     "invoiceNumber": invoiceId
-      //   }
-      // ],
       "amount": amount,
-
-    },
-
-              
-
+    },         
     {
       headers: {
         Authorization: `Bearer ${tken}`,
@@ -184,8 +168,6 @@ async function createPaymentSession(currency, accountId, amount, invoiceId, tken
       }
     }
   );
-
-  console.log('createPaymentSession response:', response.data);
   return response.data.token;
 
 }
@@ -194,16 +176,9 @@ async function createPaymentSession(currency, accountId, amount, invoiceId, tken
 app.post('/create-payment-session', async (req, res) => {
   try {
     const { currency, inaccountId, amount, invoiceId, accessToken } = req.body;
-
-    if (!this.zuoraToken) {
-      //await getZuoraAccessToken();
-    }
     const tken = accessToken;
-    console.log('tken', tken)
     const accountId = inaccountId
-    console.log('accountId', accountId)
     const sessionToken = await createPaymentSession(currency, accountId, amount, invoiceId, tken);
-    console.log('sessionToken', sessionToken)
     res.json(sessionToken);
   } catch (error) {
     console.error('Zuora API error:', error.response?.data || error.message);
@@ -212,15 +187,10 @@ app.post('/create-payment-session', async (req, res) => {
 });
 
     // Create Payment Session Endpoint
-app.post('/apply-payment', async (req, res) => {
+  app.post('/apply-payment', async (req, res) => {
   try {
     const { paymentid,amount,invoiceId,accessToken } = req.body;
-    // const tken = accessToken;
-    // console.log('tken', tken)
-    // const accountId = inaccountId
-    // console.log('accountId', accountId)
     const applyPaymentResponse = await applyPayment(paymentid, amount,invoiceId,accessToken);
-    console.log('applyPaymentResponse', applyPaymentResponse)
     res.json(applyPaymentResponse);
   } catch (error) {
     console.error('Zuora API error:', error.response?.data || error.message);
@@ -231,7 +201,6 @@ app.post('/apply-payment', async (req, res) => {
 
 async function applyPayment(paymentkey, amount,invoiceid, accessToken) {
   console.log('paymentkey', paymentkey, 'invoiceid', invoiceid, 'amount:', amount, 'accessToken', accessToken);
-  console.log("paymentURL", `https://rest.test.zuora.com/v1/payments/${paymentkey}/apply`);
   const response = await axios.put(
     `https://rest.test.zuora.com/v1/payments/${paymentkey}/apply`,
           {
@@ -250,7 +219,6 @@ async function applyPayment(paymentkey, amount,invoiceid, accessToken) {
           }
   );
 
-  console.log('applyPayment response:', response.data);
   return response.data;
 
 }
