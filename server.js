@@ -56,7 +56,7 @@ app.get('/zuora/invoice/:id', async (req, res) => {
       return res.status(404).json({ error: 'Invoice ID not found in invoice data' });
     }
 
-    // Step 3: Get account by accountId
+    // Step 3: Get Query Job data for Subscription ID
     const queryData = await axios.post(
       `https://rest.test.zuora.com/query/jobs`,
 
@@ -82,7 +82,7 @@ app.get('/zuora/invoice/:id', async (req, res) => {
     if (!queryDerails.id) {
       return res.status(404).json({ error: 'No subscription data found for the invoice' });
     }
-    //Step 3: Get account by accountId
+    //Step 4: Get file details 
 
     let status = null;
     let responseData = null;
@@ -110,7 +110,7 @@ app.get('/zuora/invoice/:id', async (req, res) => {
       return res.status(404).json({ error: 'status not found in invoice data' });
     }
 
-    // Step 3: Get account by accountId
+    // Step 5: Get Subscription ID from the file
     const subscriptionResponse = await axios.get(responseData.dataFile);
     const subscriptionData = subscriptionResponse.data;
 
