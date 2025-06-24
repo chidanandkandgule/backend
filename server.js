@@ -20,8 +20,8 @@ app.get('/zuora/invoice/:id', async (req, res) => {
     const tokenResponse = await axios.post(
       'https://rest.test.zuora.com/oauth/token',
       qs.stringify({
-        client_id: 'c3641623-a1e5-450c-a24d-6593c7278019',
-        client_secret: '=T7Kq=74I/Nritk0GMooUUKCJaXa8n33EAyAhu/',
+        client_id: '6f3b84e8-40a7-4411-8fe0-bc910943f9b2',
+        client_secret: 'RFIy9sQWLJ/JsolQO9PTZTkPFTFHtwbIswk5pu',
         grant_type: 'client_credentials'
       }),
       {
