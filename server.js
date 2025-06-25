@@ -20,8 +20,8 @@ app.get('/zuora/invoice/:id', async (req, res) => {
     const tokenResponse = await axios.post(
       'https://rest.test.zuora.com/oauth/token',
       qs.stringify({
-        client_id: '6f3b84e8-40a7-4411-8fe0-bc910943f9b2',
-        client_secret: 'RFIy9sQWLJ/JsolQO9PTZTkPFTFHtwbIswk5pu',
+        client_id: 'c3641623-a1e5-450c-a24d-6593c7278019',
+        client_secret: '=T7Kq=74I/Nritk0GMooUUKCJaXa8n33EAyAhu/',
         grant_type: 'client_credentials'
       }),
       {
@@ -150,23 +150,23 @@ async function createPaymentSession(currency, accountId, amount, invoiceId, tken
   let paymentGateway = currency == 'USD' ? "2c92a00e768e480a017690d7302d7d70" : "2c92a00f768e4fac017690d99cb73e9f"
   const response = await axios.post(
     `https://rest.test.zuora.com/web-payments/sessions`,
-    {
-
-      "currency": currency,
-      "accountId": accountId,
-      "processPayment": true,
-      "storePaymentMethod": true,
-      "paymentGateway": paymentGateway,
-      "supports3DS2": true,
-      "amount": amount,
-    },         
-    {
-      headers: {
-        Authorization: `Bearer ${tken}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
+      {
+        "currency": currency,
+        "accountId": accountId,
+        "processPayment": true,
+        "storePaymentMethod": true,
+        "paymentGateway": paymentGateway,
+        "supports3DS2": true,
+        "amount": amount
+       
+      },         
+      {
+        headers: {
+          Authorization: `Bearer ${tken}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        }
       }
-    }
   );
   return response.data.token;
 
@@ -189,18 +189,42 @@ app.post('/create-payment-session', async (req, res) => {
     // Create Payment Session Endpoint
   app.post('/apply-payment', async (req, res) => {
   try {
-    const { paymentid,amount,invoiceId,accessToken } = req.body;
+    const { paymentid,amount,invoiceId,accessToken,accountingCode } = req.body;
+     const updatePaymentResponse = await updatePayment(paymentid,accessToken,accountingCode);
     const applyPaymentResponse = await applyPayment(paymentid, amount,invoiceId,accessToken);
-    res.json(applyPaymentResponse);
+    res.json({applyPaymentResponse,
+            updatePaymentResponse}
+            );
   } catch (error) {
     console.error('Zuora API error:', error.response?.data || error.message);
     res.status(500).json({ error: 'Failed to apply Payment to invoice' });
   }
 });
 
+async function updatePayment(paymentkey,accessToken,accountingCode ) {
+  console.log('updatePayment paymentkey', paymentkey, 'AccountingCode', accountingCode,'accessToken',accessToken);
+  const response = await axios.put(
+    `https://rest.test.zuora.com/v1/payments/${paymentkey}`,
+          {
+             "financeInformation": {
+                    "bankAccountAccountingCode": accountingCode
+            }
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              Accept: 'application/json',
+            }
+          }
+  );
+
+  return response.data;
+
+}
+
 
 async function applyPayment(paymentkey, amount,invoiceid, accessToken) {
-  console.log('paymentkey', paymentkey, 'invoiceid', invoiceid, 'amount:', amount, 'accessToken', accessToken);
+  console.log('applyPayment paymentkey', paymentkey, 'invoiceid', invoiceid, 'amount:', amount, 'accessToken', accessToken);
   const response = await axios.put(
     `https://rest.test.zuora.com/v1/payments/${paymentkey}/apply`,
           {
@@ -222,8 +246,5 @@ async function applyPayment(paymentkey, amount,invoiceid, accessToken) {
   return response.data;
 
 }
-
-
-
 
 app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));
