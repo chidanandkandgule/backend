@@ -5,8 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "babel server.js --out-file dist/server.js",
-   // "build:assets": "copyfiles .env dist",
+    "build": "babel server.js --out-file dist/server.js && npm run build:assets",
+    "build:assets": "copyfiles .env dist",
     "prod-start": "node dist/server.js"
   },
   "dependencies": {
