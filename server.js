@@ -9,7 +9,7 @@ const app = express();
 const PORT = 8080;
 app.use(cors()); // ✅ enable CORS for all origins
 app.use(bodyParser.json());
-//require('env').config();
+require('env').config();
 
 
 
