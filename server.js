@@ -9,7 +9,7 @@ const app = express();
 const PORT = 8080;
 app.use(cors()); // ✅ enable CORS for all origins
 app.use(bodyParser.json());
-require('env').config();
+//require('env').config();
 
 
 
@@ -22,8 +22,8 @@ app.get('/zuora/invoice/:id', async (req, res) => {
     const tokenResponse = await axios.post(
       'https://rest.test.zuora.com/oauth/token',
       qs.stringify({
-        client_id: 'c3641623-a1e5-450c-a24d-6593c7278019',
-        client_secret: '=T7Kq=74I/Nritk0GMooUUKCJaXa8n33EAyAhu/',
+        client_id: process.env.CLIENT_ID,
+        client_secret: process.env.CLIENT_SECRET,
         grant_type: 'client_credentials'
       }),
       {
