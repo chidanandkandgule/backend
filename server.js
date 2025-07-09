@@ -9,12 +9,13 @@ const app = express();
 const PORT = 8080;
 app.use(cors()); // ✅ enable CORS for all origins
 app.use(bodyParser.json());
-require('env').config();
+//require('env').config();
 
 
 
 app.get('/zuora/invoice/:id', async (req, res) => {
   const invoiceId = req.params.id;
+console.log('✅ Azure CLIENT_ID:', process.env.CLIENT_ID);
 
   try {
 
