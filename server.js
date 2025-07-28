@@ -150,7 +150,7 @@ app.get('/zuora/invoice/:id', async (req, res) => {
 
 // Create Payment Session API
 async function createPaymentSession(currency, accountId, amount, invoiceId, tken) {
-  console.log('currency', currency, 'createPaymentSession called with accountId:', accountId, 'amount:', amount, 'invoiceId', invoiceId, 'tken:', tken);
+ // console.log('currency', currency, 'createPaymentSession called with accountId:', accountId, 'amount:', amount, 'invoiceId', invoiceId, 'tken:', tken);
   let paymentGateway = currency == 'USD' ? "2c92a00e768e480a017690d7302d7d70" : "2c92a00f768e4fac017690d99cb73e9f"
   const response = await axios.post(
     `https://rest.test.zuora.com/web-payments/sessions`,
@@ -206,7 +206,7 @@ app.post('/create-payment-session', async (req, res) => {
 });
 
 async function updatePayment(paymentkey,accessToken,accountingCode ) {
-  console.log('updatePayment paymentkey', paymentkey, 'AccountingCode', accountingCode,'accessToken',accessToken);
+ // console.log('updatePayment paymentkey', paymentkey, 'AccountingCode', accountingCode,'accessToken',accessToken);
   const response = await axios.put(
     `https://rest.test.zuora.com/v1/payments/${paymentkey}`,
           {
@@ -228,7 +228,7 @@ async function updatePayment(paymentkey,accessToken,accountingCode ) {
 
 
 async function applyPayment(paymentkey, amount,invoiceid, accessToken) {
-  console.log('applyPayment paymentkey', paymentkey, 'invoiceid', invoiceid, 'amount:', amount, 'accessToken', accessToken);
+ // console.log('applyPayment paymentkey', paymentkey, 'invoiceid', invoiceid, 'amount:', amount, 'accessToken', accessToken);
   const response = await axios.put(
     `https://rest.test.zuora.com/v1/payments/${paymentkey}/apply`,
           {
