@@ -133,11 +133,36 @@ app.get('/zuora/invoice/:id', async (req, res) => {
       }
     );
 
+    const { CCEligible__c, CCFee__c ,accountName } = invoiceWithCCResponse.data;
+    const basicinvoiceWithCCResponse = { CCEligible__c, CCFee__c ,accountName };
+
+    const {
+              id, invoiceNumber, accountId, amount, amountWithoutTax, discount,
+              invoiceDate, dueDate, autoPay, taxAmount,
+              taxExemptAmount, transferredToAccounting, InvoiceSequenceNumber__c,
+              CreditUploaded__c, Type__c, sourceType,
+              adjustmentAmount, balance,
+              createdDate, creditMemoAmount,
+              paymentAmount, refundAmount,
+              currency, success
+            } = invoiceData;
+
+const basicinvoiceData =  {
+              id, invoiceNumber, accountId, amount, amountWithoutTax, discount,
+              invoiceDate, dueDate, autoPay, taxAmount,
+              taxExemptAmount, transferredToAccounting, InvoiceSequenceNumber__c,
+              CreditUploaded__c, Type__c, sourceType, balance,
+              createdDate, creditMemoAmount,
+              paymentAmount, refundAmount,
+              currency, success 
+            };
+
+
     // Combine invoice and account info 
     res.json({
-      invoiceWithCCDetails: invoiceWithCCResponse.data,
+      invoiceWithCCDetails: basicinvoiceWithCCResponse,
       accessToken: accessToken,
-      invoice: invoiceData
+      invoice: basicinvoiceData
       
     });
 
