@@ -9,6 +9,7 @@ const app = express();
 const PORT = 8080;
 app.use(cors()); // ✅ enable CORS for all origins
 app.use(bodyParser.json());
+let accessToken = '';
 
 
 app.get('/zuora/invoice/:id', async (req, res) => {
@@ -36,7 +37,7 @@ app.get('/zuora/invoice/:id', async (req, res) => {
       }
     );
 
-    const accessToken = tokenResponse.data.access_token;
+     accessToken = tokenResponse.data.access_token;
     if (!accessToken) {
       return res.status(500).json({ error: 'Failed to get access token' });
     }
@@ -136,32 +137,14 @@ app.get('/zuora/invoice/:id', async (req, res) => {
     const { CCEligible__c, CCFee__c ,accountName } = invoiceWithCCResponse.data;
     const basicinvoiceWithCCResponse = { CCEligible__c, CCFee__c ,accountName };
 
-    const {
-              id, invoiceNumber, accountId, amount, amountWithoutTax, discount,
-              invoiceDate, dueDate, autoPay, taxAmount,
-              taxExemptAmount, transferredToAccounting, InvoiceSequenceNumber__c,
-              CreditUploaded__c, Type__c, sourceType,
-              adjustmentAmount, balance,
-              createdDate, creditMemoAmount,
-              paymentAmount, refundAmount,
-              currency, success
-            } = invoiceData;
+    const { id, invoiceNumber, accountId, amount,  balance, currency} = invoiceData;
 
-const basicinvoiceData =  {
-              id, invoiceNumber, accountId, amount, amountWithoutTax, discount,
-              invoiceDate, dueDate, autoPay, taxAmount,
-              taxExemptAmount, transferredToAccounting, InvoiceSequenceNumber__c,
-              CreditUploaded__c, Type__c, sourceType, balance,
-              createdDate, creditMemoAmount,
-              paymentAmount, refundAmount,
-              currency, success 
-            };
+const basicinvoiceData =  { id, invoiceNumber, accountId, amount,  balance, currency}
 
 
     // Combine invoice and account info 
     res.json({
       invoiceWithCCDetails: basicinvoiceWithCCResponse,
-      accessToken: accessToken,
       invoice: basicinvoiceData
       
     });
@@ -175,7 +158,7 @@ const basicinvoiceData =  {
 
 // Create Payment Session API
 async function createPaymentSession(currency, accountId, amount, invoiceId, tken) {
- // console.log('currency', currency, 'createPaymentSession called with accountId:', accountId, 'amount:', amount, 'invoiceId', invoiceId, 'tken:', tken);
+ console.log('currency', currency, 'createPaymentSession called with accountId:', accountId, 'amount:', amount, 'invoiceId', invoiceId, 'tken:', tken);
   let paymentGateway = currency == 'USD' ? "2c92a00e768e480a017690d7302d7d70" : "2c92a00f768e4fac017690d99cb73e9f"
   const response = await axios.post(
     `https://rest.test.zuora.com/web-payments/sessions`,
@@ -204,7 +187,7 @@ async function createPaymentSession(currency, accountId, amount, invoiceId, tken
 // Create Payment Session Endpoint
 app.post('/create-payment-session', async (req, res) => {
   try {
-    const { currency, inaccountId, amount, invoiceId, accessToken } = req.body;
+    const { currency, inaccountId, amount, invoiceId } = req.body;
     const tken = accessToken;
     const accountId = inaccountId
     const sessionToken = await createPaymentSession(currency, accountId, amount, invoiceId, tken);
@@ -218,7 +201,7 @@ app.post('/create-payment-session', async (req, res) => {
     // Create Payment Session Endpoint
   app.post('/apply-payment', async (req, res) => {
   try {
-    const { paymentid,amount,invoiceId,accessToken,accountingCode } = req.body;
+    const { paymentid,amount,invoiceId,accountingCode } = req.body;
      const updatePaymentResponse = await updatePayment(paymentid,accessToken,accountingCode);
     const applyPaymentResponse = await applyPayment(paymentid, amount,invoiceId,accessToken);
     res.json({applyPaymentResponse,
@@ -253,7 +236,7 @@ async function updatePayment(paymentkey,accessToken,accountingCode ) {
 
 
 async function applyPayment(paymentkey, amount,invoiceid, accessToken) {
- // console.log('applyPayment paymentkey', paymentkey, 'invoiceid', invoiceid, 'amount:', amount, 'accessToken', accessToken);
+ console.log('applyPayment paymentkey', paymentkey, 'invoiceid', invoiceid, 'amount:', amount, 'accessToken', accessToken);
   const response = await axios.put(
     `https://rest.test.zuora.com/v1/payments/${paymentkey}/apply`,
           {
