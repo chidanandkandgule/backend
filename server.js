@@ -15,7 +15,10 @@ let accessToken = '';
 app.get('/zuora/invoice/:id', async (req, res) => {
   const invoiceId = req.params.id;
 
-  try {
+   if(invoiceId.includes('INV') || invoiceId.includes('INV-') || invoiceId.includes('-')){
+        return res.status(500).json({ error: 'Invalid Request' });
+   }  else{
+           try {
 
     // Step 1: Get OAuth token
     const tokenResponse = await axios.post(
@@ -153,6 +156,9 @@ const basicinvoiceData =  { id, invoiceNumber, accountId, amount,  balance, curr
     console.error('Zuora API error:', err.response?.data || err.message);
     res.status(500).json({ error: 'Failed to retrieve invoice or account data' });
   }
+   }
+
+ 
 });
 
 
