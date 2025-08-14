@@ -28,6 +28,7 @@ app.use(cors({
 app.use(bodyParser.json());
 let accessToken = '';
 let dimainToken = process.env.DOMAIN_TOKEN || 'WZpJ0rcK2t_3mq1cRz7y5A';
+let ZuoraUrl = "https://rest.zuora.com";
 
 function verifyCustomHeader(req, res, next) {
   if (req.headers['x-requested-by'] === dimainToken) {
@@ -47,7 +48,7 @@ app.get('/zuora/invoice/:id',verifyCustomHeader, async (req, res) => {
 
     // Step 1: Get OAuth token
     const tokenResponse = await axios.post(
-      'https://rest.test.zuora.com/oauth/token',
+      `${ZuoraUrl}/oauth/token`,
       qs.stringify({
         client_id: process.env.CLIENT_ID,
         client_secret: process.env.CLIENT_SECRET,
@@ -69,7 +70,7 @@ app.get('/zuora/invoice/:id',verifyCustomHeader, async (req, res) => {
 
     // Step 2: Get invoice by ID
     const invoiceResponse = await axios.get(
-      `https://rest.test.zuora.com/v1/invoices/${invoiceId}`,
+      `${ZuoraUrl}/v1/invoices/${invoiceId}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -87,7 +88,7 @@ app.get('/zuora/invoice/:id',verifyCustomHeader, async (req, res) => {
 
     // Step 3: Get Query Job data for Subscription ID
     const queryData = await axios.post(
-      `https://rest.test.zuora.com/query/jobs`,
+      `${ZuoraUrl}/query/jobs`,
 
       {
         "query": `SELECT DISTINCT sub.ID AS SubscriptionID FROM invoiceitem 
@@ -118,7 +119,7 @@ app.get('/zuora/invoice/:id',verifyCustomHeader, async (req, res) => {
     let fileDetails = null;
     while (status != 'completed') {
       fileDetails = await axios.get(
-        `https://rest.test.zuora.com/query/jobs/${queryDerails.id}`,
+        `${ZuoraUrl}/query/jobs/${queryDerails.id}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -149,7 +150,7 @@ app.get('/zuora/invoice/:id',verifyCustomHeader, async (req, res) => {
     }
 
     const invoiceWithCCResponse = await axios.get(
-      `https://rest.test.zuora.com/v1/subscriptions/${subscriptionData.SubscriptionID}`,
+      `${ZuoraUrl}/v1/subscriptions/${subscriptionData.SubscriptionID}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -183,9 +184,9 @@ app.get('/zuora/invoice/:id',verifyCustomHeader, async (req, res) => {
       // Create Payment Session API
       async function createPaymentSession(currency, accountId, amount, invoiceId, tken) {
       //console.log('currency', currency, 'createPaymentSession called with accountId:', accountId, 'amount:', amount, 'invoiceId', invoiceId, 'tken:', tken);
-        let paymentGateway = currency == 'USD' ? process.env.paymentGatewayUSD : process.env.paymentGatewayNonUSD
+       let paymentGateway = currency == 'USD' ? process.env.paymentGatewayUSD : process.env.paymentGatewayNonUSD
         const response = await axios.post(
-          `https://rest.test.zuora.com/web-payments/sessions`,
+          `${ZuoraUrl}/web-payments/sessions`,
             {
               "currency": currency,
               "accountId": accountId,
@@ -211,12 +212,6 @@ app.get('/zuora/invoice/:id',verifyCustomHeader, async (req, res) => {
       // Create Payment Session Endpoint
       app.post('/create-payment-session', async (req, res) => {
         try {
-
-           const requester = req.headers['x-requested-by'];
-          if (requester !== dimainToken) {
-            return res.status(403).json({ error: 'Unauthorized request source' });
-          }
-
           const { currency, inaccountId, amount, invoiceId } = req.body;
           const tken = accessToken;
           const accountId = inaccountId
@@ -246,7 +241,7 @@ app.get('/zuora/invoice/:id',verifyCustomHeader, async (req, res) => {
       async function updatePayment(paymentkey,accessToken,accountingCode ) {
       // console.log('updatePayment paymentkey', paymentkey, 'AccountingCode', accountingCode,'accessToken',accessToken);
         const response = await axios.put(
-          `https://rest.test.zuora.com/v1/payments/${paymentkey}`,
+          `${ZuoraUrl}/v1/payments/${paymentkey}`,
                 {
                   "financeInformation": {
                           "bankAccountAccountingCode": accountingCode
@@ -268,7 +263,7 @@ app.get('/zuora/invoice/:id',verifyCustomHeader, async (req, res) => {
       async function applyPayment(paymentkey, amount,invoiceid, accessToken) {
       //console.log('applyPayment paymentkey', paymentkey, 'invoiceid', invoiceid, 'amount:', amount, 'accessToken', accessToken);
         const response = await axios.put(
-          `https://rest.test.zuora.com/v1/payments/${paymentkey}/apply`,
+          `${ZuoraUrl}/v1/payments/${paymentkey}/apply`,
                 {
                   "invoices": [
                     {
